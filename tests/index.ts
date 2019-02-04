@@ -1,11 +1,17 @@
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as _ from 'lodash';
-import { cli, questions } from '../src/';
+import * as mockfs from 'mock-fs';
+import { cli, generate, questions } from '../src/';
+import { readdirSync } from 'fs';
 
 before(() => {
   chai.should();
   chai.use(chaiAsPromised);
+});
+
+afterEach(() => {
+  mockfs.restore();
 });
 
 describe('#cli', () => {
@@ -25,6 +31,24 @@ describe('#cli', () => {
     return chai
       .expect(cli(['..', '..', '--template', 'uri', '--output', 'dir']))
       .eventually.deep.eq({ version: '0.1.0', template: 'uri', output: 'dir' });
+  });
+});
+
+describe('#generate', () => {
+  it('generates files, skipping .git dir and .template_vars.json', () => {
+    mockfs({
+      'path/to/fake/template': {
+        a: 'a contents',
+        'another-dir': {},
+        '.template_vars.json': '[]',
+        '.git': {}
+      },
+      'path/to/fake/output': {}
+    });
+    generate({ foo: 'bar' }, 'path/to/fake/template', 'path/to/fake/output');
+    chai
+      .expect(readdirSync('path/to/fake/output'))
+      .to.deep.eq(['a', 'another-dir']);
   });
 });
 

@@ -78,7 +78,7 @@ function download(template: string, tmpDirName: string): Promise<string> {
  * @param templatePath tmpDir location
  * @param newProjectPath outputPath location
  */
-function generate(
+export function generate(
   vars: object,
   templatePath: string,
   newProjectPath: string
