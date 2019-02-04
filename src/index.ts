@@ -12,10 +12,10 @@ import * as tmp from 'tmp';
  * used to represent serialized form of template variables
  */
 type Var = {
-  type?: 'text' | 'select' | 'number',
-  name: string,
-  default?: number | string,
-  choices?: (number | string)[]
+  type?: 'text' | 'select' | 'number';
+  name: string;
+  default?: number | string;
+  choices?: (number | string)[];
 };
 
 const TEMPLATE_VARS: string = '.template_vars.json';
@@ -26,7 +26,7 @@ const debugLog: debug.IDebugger = debug('serverless-template');
  * parse cli
  * @param args user provided command line args
  */
-function cli(args: string[]): Promise<{ [key: string]: any }> {
+export function cli(args: string[]): Promise<{ [key: string]: any }> {
   // https://www.npmjs.com/package/commander
   commander
     .version('0.1.0')
@@ -55,7 +55,7 @@ function cli(args: string[]): Promise<{ [key: string]: any }> {
  * @param template template URI
  * @param tmpDirName tmp directory name
  */
-function download(template: string, tmpDirName: string): Promise<string>  {
+function download(template: string, tmpDirName: string): Promise<string> {
   // clone template
   debugLog(`cloning template ${commander.template}`);
   const res = spawnSync('git', ['clone', commander.template, tmpDirName], {
@@ -72,7 +72,11 @@ function download(template: string, tmpDirName: string): Promise<string>  {
  * @param templatePath tmpDir location
  * @param newProjectPath outputPath location
  */
-function generate(vars: object, templatePath: string, newProjectPath: string): void {
+function generate(
+  vars: object,
+  templatePath: string,
+  newProjectPath: string
+): void {
   fs.readdirSync(templatePath).forEach(file => {
     if ('.git' === file) {
       debugLog('skipping .git directory');
@@ -113,7 +117,7 @@ function generate(vars: object, templatePath: string, newProjectPath: string): v
  *
  * @param vars array of template vars
  */
-function questions(vars: Var[]): prompts.PromptObject[] {
+export function questions(vars: Var[]): prompts.PromptObject[] {
   return vars.map(variable => {
     return {
       type: variable.type || 'text',
@@ -121,12 +125,15 @@ function questions(vars: Var[]): prompts.PromptObject[] {
       name: variable.name,
       initial: variable.default,
       validate: (value: any) => !!value,
-      choices: (variable.choices || []).map(choice => {
-        return {
-          title: `${choice}`,
-          value: `${choice}`
-        };
-      })
+      choices:
+        variable.choices === undefined
+          ? undefined
+          : variable.choices.map(choice => {
+              return {
+                title: `${choice}`,
+                value: `${choice}`
+              };
+            })
     };
   });
 }
@@ -134,29 +141,30 @@ function questions(vars: Var[]): prompts.PromptObject[] {
 function loadTemplateVars(dir: string): Promise<Var[]> {
   return new Promise<Var[]>(resolve => {
     const templateVarsPath = path.join(dir, TEMPLATE_VARS);
-    const templateVars: Var[] = JSON.parse(fs.readFileSync(templateVarsPath, 'utf8'));
+    const templateVars: Var[] = JSON.parse(
+      fs.readFileSync(templateVarsPath, 'utf8')
+    );
     resolve(templateVars);
   });
 }
 
 function createTmpDir(): Promise<string> {
-  return new Promise<string>(
-    resolve => resolve(tmp.dirSync({ prefix: 'serverless-template-' }).name)
+  return new Promise<string>(resolve =>
+    resolve(tmp.dirSync({ prefix: 'serverless-template-' }).name)
   );
 }
 
 export function run(args: string[]) {
   cli(args)
-  .then(
-    options => createTmpDir().then(tmpDir => download(options.template, tmpDir))
-  )
-  .then(
-    tmpDir => loadTemplateVars(tmpDir).then(vars => {
-      return { templateVars: vars, tmpDir: tmpDir };
-    })
-  )
-  .then(
-    result => {
+    .then(options =>
+      createTmpDir().then(tmpDir => download(options.template, tmpDir))
+    )
+    .then(tmpDir =>
+      loadTemplateVars(tmpDir).then(vars => {
+        return { templateVars: vars, tmpDir: tmpDir };
+      })
+    )
+    .then(result => {
       return prompts(questions(result.templateVars), {
         onCancel: prompt => {
           return process.exit(0);
@@ -167,15 +175,13 @@ export function run(args: string[]) {
           tmpDir: result.tmpDir
         };
       });
-    }
-  )
-  .then(result => {
-    fs.mkdirSync(commander.output, { recursive: true });
-    return generate(result.templateVars, result.tmpDir, commander.output);
-  })
-  .catch(err => {
-    console.error(`Error: ${err}`);
-    process.exit(1);
-  });
+    })
+    .then(result => {
+      fs.mkdirSync(commander.output, { recursive: true });
+      return generate(result.templateVars, result.tmpDir, commander.output);
+    })
+    .catch(err => {
+      console.error(`Error: ${err}`);
+      process.exit(1);
+    });
 }
-
