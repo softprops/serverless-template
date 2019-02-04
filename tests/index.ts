@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as _ from 'lodash';
 import * as mockfs from 'mock-fs';
-import { cli, generate, questions } from '../src/';
+import { cli, generate, questions, loadTemplateVars } from '../src/';
 import { readdirSync } from 'fs';
 
 before(() => {
@@ -49,6 +49,19 @@ describe('#generate', () => {
     chai
       .expect(readdirSync('path/to/fake/output'))
       .to.deep.eq(['a', 'another-dir']);
+  });
+});
+
+describe('#loadTemplateVars', async () => {
+  it('loads and parses template vars', () => {
+    mockfs({
+      'path/to/fake/template': {
+        '.template_vars.json': '[{"name":"foo"}]'
+      }
+    });
+    return chai
+      .expect(loadTemplateVars('path/to/fake/template'))
+      .to.eventually.deep.eq([{ name: 'foo' }]);
   });
 });
 

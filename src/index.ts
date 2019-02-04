@@ -144,7 +144,7 @@ export function questions(vars: Var[]): prompts.PromptObject[] {
   });
 }
 
-function loadTemplateVars(dir: string): Promise<Var[]> {
+export function loadTemplateVars(dir: string): Promise<Var[]> {
   return new Promise<Var[]>(resolve => {
     const templateVarsPath = path.join(dir, TEMPLATE_VARS);
     const templateVars: Var[] = JSON.parse(
