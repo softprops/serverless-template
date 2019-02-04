@@ -1,7 +1,13 @@
 import { spawnSync } from 'child_process';
 import * as commander from 'commander';
 import * as debug from 'debug';
-import * as fs from 'fs';
+import {
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync
+} from 'fs';
 import * as handlebars from 'handlebars';
 import * as path from 'path';
 import * as prompts from 'prompts';
@@ -77,7 +83,7 @@ function generate(
   templatePath: string,
   newProjectPath: string
 ): void {
-  fs.readdirSync(templatePath).forEach(file => {
+  readdirSync(templatePath).forEach(file => {
     if ('.git' === file) {
       debugLog('skipping .git directory');
       return;
@@ -96,18 +102,18 @@ function generate(
       handlebars.compile(file)(vars)
     );
 
-    const stats = fs.statSync(origFilePath);
+    const stats = statSync(origFilePath);
 
     if (stats.isFile()) {
-      const contents = fs.readFileSync(origFilePath, 'utf8');
+      const contents = readFileSync(origFilePath, 'utf8');
       debugLog(`writing file ${expandedPath}`);
-      fs.writeFileSync(expandedPath, handlebars.compile(contents)(vars), {
+      writeFileSync(expandedPath, handlebars.compile(contents)(vars), {
         encoding: 'utf8',
         mode: stats.mode
       });
     } else if (stats.isDirectory()) {
       debugLog(`creating dir ${expandedPath}`);
-      fs.mkdirSync(expandedPath, { recursive: true });
+      mkdirSync(expandedPath, { recursive: true });
       generate(vars, origFilePath, expandedPath);
     }
   });
@@ -142,7 +148,7 @@ function loadTemplateVars(dir: string): Promise<Var[]> {
   return new Promise<Var[]>(resolve => {
     const templateVarsPath = path.join(dir, TEMPLATE_VARS);
     const templateVars: Var[] = JSON.parse(
-      fs.readFileSync(templateVarsPath, 'utf8')
+      readFileSync(templateVarsPath, 'utf8')
     );
     resolve(templateVars);
   });
@@ -177,7 +183,7 @@ export function run(args: string[]) {
       });
     })
     .then(result => {
-      fs.mkdirSync(commander.output, { recursive: true });
+      mkdirSync(commander.output, { recursive: true });
       return generate(result.templateVars, result.tmpDir, commander.output);
     })
     .catch(err => {
