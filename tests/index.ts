@@ -9,13 +9,13 @@ before(() => {
 });
 
 describe('#cli', () => {
-  it('requires template', async () => {
+  it('requires template option', async () => {
     return chai
       .expect(cli([]))
       .eventually.be.rejectedWith('Option "--template <uri>" missing');
   });
 
-  it('requires output', async () => {
+  it('requires output option', async () => {
     return chai
       .expect(cli(['..', '..', '--template', 'uri']))
       .eventually.be.rejectedWith('Option "--output <dir>" missing');
