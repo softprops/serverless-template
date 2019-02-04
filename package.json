@@ -16,6 +16,7 @@
     "serverless-template": "dist/index.js"
   },
   "files": [
+    "bin",
     "dist",
     "package.json",
     "README.md"

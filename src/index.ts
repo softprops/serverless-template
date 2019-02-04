@@ -40,11 +40,11 @@ function cli(args: string[]): Promise<{ [key: string]: any }> {
     .parse(args);
 
   if (!commander.template) {
-    return Promise.reject('error: option template argument missing');
+    return Promise.reject('Option "--template <uri>" missing');
   }
 
   if (!commander.output) {
-    return Promise.reject('error: option output argument missing');
+    return Promise.reject('Option "--output <dir>" missing');
   }
 
   return Promise.resolve(commander.opts());
@@ -145,7 +145,8 @@ function createTmpDir(): Promise<string> {
   );
 }
 
-cli(process.argv)
+export function run(args: string[]) {
+  cli(args)
   .then(
     options => createTmpDir().then(tmpDir => download(options.template, tmpDir))
   )
@@ -176,3 +177,5 @@ cli(process.argv)
     console.error(`Error: ${err}`);
     process.exit(1);
   });
+}
+
