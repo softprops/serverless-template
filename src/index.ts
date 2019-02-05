@@ -45,16 +45,17 @@ export function cli(args: string[]): Promise<{ [key: string]: any }> {
       'directory template contents will be written to'
     )
     .parse(args);
+  const options = commander.opts();
 
   if (!commander.template) {
     return Promise.reject('Option "--template <uri>" missing');
   }
 
-  if (!commander.output) {
-    return Promise.reject('Option "--output <dir>" missing');
+  if (!options.output) {
+    options.output = '.';
   }
 
-  return Promise.resolve(commander.opts());
+  return Promise.resolve(options);
 }
 
 /**
@@ -164,29 +165,32 @@ function createTmpDir(): Promise<string> {
 export function run(args: string[]) {
   cli(args)
     .then(options =>
-      createTmpDir().then(tmpDir => download(options.template, tmpDir))
+      createTmpDir()
+        .then(tmpDir => download(options.template, tmpDir))
+        .then(tmpDir => Object.assign(options, { tmpDir }))
     )
-    .then(tmpDir =>
-      loadTemplateVars(tmpDir).then(vars => {
-        return { templateVars: vars, tmpDir: tmpDir };
+    .then(options =>
+      loadTemplateVars(options.tmpDir).then(templateVars => {
+        return Object.assign(options, { templateVars });
       })
     )
-    .then(result => {
-      return prompts(questions(result.templateVars), {
+    .then(options =>
+      prompts(questions(options.templateVars), {
         onCancel: prompt => {
           return process.exit(0);
         }
       }).then(vars => {
-        return {
-          templateVars: vars,
-          tmpDir: result.tmpDir
-        };
-      });
-    })
-    .then(result => {
+        return Object.assign(options, { vars });
+      })
+    )
+    .then(options => {
       registerHelpers();
       mkdirSync(commander.output, { recursive: true });
-      return generate(result.templateVars, result.tmpDir, commander.output);
+      return generate(
+        options.vars,
+        options.tmpDir,
+        options.output === '.' ? process.cwd() : commander.output
+      );
     })
     .catch(err => {
       console.error(`Error: ${err}`);

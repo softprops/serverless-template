@@ -22,7 +22,7 @@
     "README.md"
   ],
   "scripts": {
-    "cli": "npm run compile && node dist/index.js",
+    "cli": "npm run compile && bin/serverless-template",
     "compile": "tsc -p ./",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",

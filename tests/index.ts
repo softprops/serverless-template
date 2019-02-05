@@ -21,10 +21,10 @@ describe('#cli', () => {
       .eventually.be.rejectedWith('Option "--template <uri>" missing');
   });
 
-  it('requires output option', async () => {
+  it('defaults output option to .', async () => {
     return chai
       .expect(cli(['..', '..', '--template', 'uri']))
-      .eventually.be.rejectedWith('Option "--output <dir>" missing');
+      .eventually.deep.eq({ version: '0.1.0', template: 'uri', output: '.' });
   });
 
   it('returns options provided', async () => {
