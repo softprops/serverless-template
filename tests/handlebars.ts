@@ -1,7 +1,6 @@
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as handlebars from 'handlebars';
-import * as _ from 'lodash';
 import { registerHelpers } from '../src/handlebars';
 
 before(() => {
