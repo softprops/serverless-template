@@ -12,6 +12,7 @@ import * as handlebars from 'handlebars';
 import * as path from 'path';
 import * as prompts from 'prompts';
 import * as tmp from 'tmp';
+import { registerHelpers } from './handlebars';
 
 /**
  * a subset of PromptObject fields from https://www.npmjs.com/package/prompts
@@ -183,6 +184,7 @@ export function run(args: string[]) {
       });
     })
     .then(result => {
+      registerHelpers();
       mkdirSync(commander.output, { recursive: true });
       return generate(result.templateVars, result.tmpDir, commander.output);
     })

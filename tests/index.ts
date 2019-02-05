@@ -1,9 +1,9 @@
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
+import { readdirSync } from 'fs';
 import * as _ from 'lodash';
 import * as mockfs from 'mock-fs';
-import { cli, generate, questions, loadTemplateVars } from '../src/';
-import { readdirSync } from 'fs';
+import { cli, generate, loadTemplateVars, questions } from '../src/';
 
 before(() => {
   chai.should();
