@@ -3,6 +3,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 import { readdirSync } from 'fs';
 import * as _ from 'lodash';
 import * as mockfs from 'mock-fs';
+import prompts = require('prompts');
 import { cli, generate, loadTemplateVars, questions } from '../src/';
 
 before(() => {
@@ -15,10 +16,15 @@ afterEach(() => {
 });
 
 describe('#cli', () => {
-  it('requires template option', async () => {
+  it('would prompt for template if not provided', async () => {
+    prompts.inject(['uri']);
     return chai
-      .expect(cli([]))
-      .eventually.be.rejectedWith('Option "--template <uri>" missing');
+      .expect(cli(['..', '..']))
+      .eventually.be.deep.eq({
+        version: '0.1.0',
+        template: 'uri',
+        output: '.'
+      });
   });
 
   it('defaults output option to .', async () => {

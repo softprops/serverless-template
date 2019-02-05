@@ -1,3 +1,4 @@
+const chalk = require('chalk');
 import { spawnSync } from 'child_process';
 import * as commander from 'commander';
 import * as debug from 'debug';
@@ -9,6 +10,8 @@ import {
   writeFileSync
 } from 'fs';
 import * as handlebars from 'handlebars';
+import * as _ from 'lodash';
+import fetch from 'node-fetch';
 import * as path from 'path';
 import * as prompts from 'prompts';
 import * as tmp from 'tmp';
@@ -29,17 +32,25 @@ const TEMPLATE_VARS: string = '.template_vars.json';
 
 const debugLog: debug.IDebugger = debug('serverless-template');
 
+function templates(): Promise<any> {
+  return fetch(
+    'https://raw.githubusercontent.com/serverless/plugins/master/plugins.json'
+  ).then(res => res.json());
+}
 /**
  * parse cli
  * @param args user provided command line args
  */
-export function cli(args: string[]): Promise<{ [key: string]: any }> {
+export async function cli(args: string[]): Promise<{ [key: string]: any }> {
   // https://www.npmjs.com/package/commander
   commander
     .version('0.1.0')
     .name('serverless-template')
     .description('Create serverless applications from templates')
-    .option('-t, --template <uri>', 'template URI (git only for now)')
+    .option(
+      '-t, --template <uri>',
+      'template URI. when not not provided a prompt provide options'
+    )
     .option(
       '-o, --output <dir>',
       'directory template contents will be written to'
@@ -47,15 +58,46 @@ export function cli(args: string[]): Promise<{ [key: string]: any }> {
     .parse(args);
   const options = commander.opts();
 
-  if (!commander.template) {
-    return Promise.reject('Option "--template <uri>" missing');
-  }
+  let template: string =
+    options.template !== undefined
+      ? options.template
+      : await templates()
+          .then<prompts.PromptObject>(templates => {
+            console.log(templates.length + ' templates available');
+            return {
+              type: 'autocomplete',
+              name: 'template',
+              message: 'Select a serverless template',
+              choices: templates.map(template => {
+                return {
+                  title: `${template.name}\t${chalk.gray(
+                    template.description
+                  )}`,
+                  value: template.githubUrl
+                };
+              }),
+              suggest: (input, choices) =>
+                Promise.resolve(
+                  _.orderBy(
+                    choices.filter(c => c.title.indexOf(input) !== -1),
+                    ['name'],
+                    ['asc']
+                  )
+                )
+            };
+          })
+          .then((question: prompts.PromptObject) =>
+            prompts(question, {
+              onCancel: prompt => process.exit(0)
+            })
+          )
+          .then(answers => answers.template);
 
   if (!options.output) {
     options.output = '.';
   }
 
-  return Promise.resolve(options);
+  return Promise.resolve(Object.assign(options, { template: template }));
 }
 
 /**
@@ -188,6 +230,7 @@ export function run(args: string[]) {
         options.output === '.' ? process.cwd() : commander.output
       );
     })
+    .then(() => console.log('Happy coding'))
     .catch(err => {
       console.error(`Error: ${err}`);
       process.exit(1);
