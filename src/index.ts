@@ -53,7 +53,8 @@ export async function cli(args: string[]): Promise<{ [key: string]: any }> {
     )
     .option(
       '-o, --output <dir>',
-      'directory template contents will be written to'
+      'directory template contents will be written to',
+      '.'
     )
     .parse(args);
   const options = commander.opts();
@@ -70,12 +71,13 @@ export async function cli(args: string[]): Promise<{ [key: string]: any }> {
               message: 'Select a serverless template',
               choices: templates.map(template => {
                 return {
-                  title: `${template.name}\t${chalk.gray(
+                  title: `${template.name} - ${chalk.gray(
                     template.description
                   )}`,
                   value: template.githubUrl
                 };
               }),
+              limit: 20,
               suggest: (input, choices) =>
                 Promise.resolve(
                   _.orderBy(
@@ -92,10 +94,6 @@ export async function cli(args: string[]): Promise<{ [key: string]: any }> {
             })
           )
           .then(answers => answers.template);
-
-  if (!options.output) {
-    options.output = '.';
-  }
 
   return Promise.resolve(Object.assign(options, { template: template }));
 }

@@ -59,6 +59,7 @@
     "handlebars": "^4.0.12",
     "node-fetch": "^2.3.0",
     "prompts": "^2.0.1",
+    "serverless": "^1.36.3",
     "tmp": "0.0.33"
   },
   "devDependencies": {
