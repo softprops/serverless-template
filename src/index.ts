@@ -170,18 +170,14 @@ export function run(args: string[]) {
         .then(tmpDir => Object.assign(options, { tmpDir }))
     )
     .then(options =>
-      loadTemplateVars(options.tmpDir).then(templateVars => {
-        return Object.assign(options, { templateVars });
-      })
+      loadTemplateVars(options.tmpDir).then(templateVars =>
+        Object.assign(options, { templateVars })
+      )
     )
     .then(options =>
       prompts(questions(options.templateVars), {
-        onCancel: prompt => {
-          return process.exit(0);
-        }
-      }).then(vars => {
-        return Object.assign(options, { vars });
-      })
+        onCancel: prompt => process.exit(0)
+      }).then(vars => Object.assign(options, { vars }))
     )
     .then(options => {
       registerHelpers();
