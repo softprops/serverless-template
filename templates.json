@@ -1,0 +1,7 @@
+[
+  {
+    "name": "serverless-template-test",
+    "description": "this is a test of the template system",
+    "githubUrl": "https://github.com/softprops/serverless-template-test"
+  }
+]
