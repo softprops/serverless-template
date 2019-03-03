@@ -67,7 +67,6 @@
     "@types/chai-as-promised": "^7.1.0",
     "@types/chalk": "^2.2.0",
     "@types/debug": "0.0.31",
-    "@types/handlebars": "^4.0.40",
     "@types/lodash": "^4.14.121",
     "@types/mocha": "^5.2.6",
     "@types/mock-fs": "^3.6.30",
