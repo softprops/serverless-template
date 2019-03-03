@@ -58,7 +58,7 @@
     "debug": "^4.1.1",
     "handlebars": "^4.1.0",
     "node-fetch": "^2.3.0",
-    "prompts": "git@github.com:terkelg/prompts.git",
+    "prompts": "git@github.com:terkelg/prompts.git#e841383",
     "serverless": "^1.38.0",
     "tmp": "0.0.33"
   },
